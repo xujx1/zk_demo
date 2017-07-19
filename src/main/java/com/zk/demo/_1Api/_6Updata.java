@@ -3,6 +3,7 @@ package com.zk.demo._1Api;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.data.Stat;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,13 +46,13 @@ public class _6Updata {
          * cb              注册一个异步回调函数
          * ctx             用户传递上下文信息的对象
          */
-        zooKeeper.setData("/test", "8".getBytes(), -1);
+        Stat stat = zooKeeper.setData("/test", "8".getBytes(), -1);
 
-        zooKeeper.setData("/test", "7".getBytes(), -1, (rc, path, ctx, stat) -> {
+        zooKeeper.setData("/test", "7".getBytes(), stat.getVersion(), (rc, path, ctx, stat1) -> {
             String sb = ("rc=" + rc) + "\n" +
                     "path=" + path + "\n" +
                     "ctx=" + ctx + "\n" +
-                    "stat=" + stat;
+                    "stat=" + stat1;
             System.out.println(sb);
             atomicBoolean.compareAndSet(false, true);
         }, "更新数据");
