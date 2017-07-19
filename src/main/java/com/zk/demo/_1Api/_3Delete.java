@@ -1,5 +1,6 @@
 package com.zk.demo._1Api;
 
+import org.apache.zookeeper.AsyncCallback;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -14,7 +15,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class _3Delete {
     private static ReentrantLock reentrantLock = new ReentrantLock();
-    private static Condition condition = reentrantLock.newCondition();
+    private static Condition condition_1 = reentrantLock.newCondition();
+    private static Condition condition_2 = reentrantLock.newCondition();
 
     public static void main(String[] args) throws IOException, KeeperException, InterruptedException {
         /**
@@ -26,7 +28,7 @@ public class _3Delete {
             reentrantLock.lock();
             try {
                 if (Watcher.Event.KeeperState.SyncConnected.equals(event.getState())) {
-                    condition.signal();
+                    condition_1.signal();
                 }
             } finally {
                 reentrantLock.unlock();
@@ -36,7 +38,7 @@ public class _3Delete {
 
         reentrantLock.lock();
         try {
-            condition.await();
+            condition_1.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
@@ -51,9 +53,30 @@ public class _3Delete {
          * ctx      用于传递上下文信息的对象
          */
 
-        zooKeeper.delete("/path1", -1);
+        zooKeeper.delete("/node2", -1);
         System.out.println("已经删除指定的节点");
 
+
+        zooKeeper.delete("/node1", -1, (rc, path, ctx) -> {
+            reentrantLock.lock();
+            String sb = ("rc=" + rc) + "\n" +
+                    "path" + path + "\n" +
+                    "ctx=" + ctx + "\n";
+            System.out.println(sb);
+            try {
+                condition_2.signal();
+            } finally {
+                reentrantLock.unlock();
+            }
+        }, "删除");
+
+
+        reentrantLock.lock();
+        try {
+            condition_2.await();
+        } finally {
+            reentrantLock.unlock();
+        }
     }
 
 }
