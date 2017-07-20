@@ -1,5 +1,6 @@
 master选举
-http://www.cnblogs.com/nevermorewang/p/5611807.html
+zkClient: http://www.cnblogs.com/nevermorewang/p/5611807.html
+curator:http://blog.csdn.net/dc_726/article/details/46475633
 
 
 选主原理介绍：zookeeper的节点有两种类型，持久节点跟临时节点。
